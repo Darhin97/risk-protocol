@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
+    throw new Error("Failed to fetch order");
     console.error(error);
 
     return NextResponse.error();
