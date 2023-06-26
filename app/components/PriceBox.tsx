@@ -1,6 +1,5 @@
 "use client";
 
-import { createObject } from "../utility/actions";
 import { TOKEN_LIST } from "../utility/data";
 import PriceBoxItem from "./PriceBoxItem";
 import { useState, useEffect } from "react";
@@ -15,7 +14,7 @@ const PriceBox: React.FC<PriceBoxProps> = (props) => {
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    setOrders(tokenList.map((token) => token.order));
+    setOrders(tokenList.map((token:any) => token.order));
   }, [tokenList]);
 
   return (
@@ -27,7 +26,7 @@ const PriceBox: React.FC<PriceBoxProps> = (props) => {
           <p className="w-full font-bold ml-1.5">Taker</p>
         </div>
 
-        {orders.map((token) => {
+        {orders.map((token:any) => {
           const makerP = TOKEN_LIST.find(
             (value) => token.takerToken === value.value
           );
@@ -37,14 +36,14 @@ const PriceBox: React.FC<PriceBoxProps> = (props) => {
           return (
             <PriceBoxItem
               key={token.id}
-              makerToken={makerP?.label}
+              makerToken={makerP?.label as string}
               makerAmount={token.takerAmount}
-              makerlogoSrc={makerP?.logoSrc}
-              takerToken={takerP?.label}
+              makerlogoSrc={makerP?.logoSrc as string}
+              takerToken={takerP?.label as string}
               takerAmount={token.makerAmount}
-              takerlogoSrc={takerP?.logoSrc}
-              decimalMaker={takerP?.decimals}
-              decimalTaker={makerP?.decimals}
+              takerlogoSrc={takerP?.logoSrc as string}
+              decimalMaker={takerP?.decimals as number}
+              decimalTaker={makerP?.decimals as number}
             />
           );
         })}

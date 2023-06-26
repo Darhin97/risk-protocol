@@ -2,15 +2,14 @@
 
 import axios from "axios";
 import {
-  createContext,
+  createContext, Dispatch, SetStateAction,
   useCallback,
   useContext,
   useMemo,
   useState,
 } from "react";
 import { toast } from "react-hot-toast";
-import { createObject } from "../utility/actions";
-import { data } from "autoprefixer";
+
 
 interface TokenProviderProps {
   children: React.ReactNode;
@@ -22,9 +21,9 @@ interface TokenContexts {
   handleQouteToken: (token: string) => void;
   handleBaseToken: (token: string) => void;
   fetchOrderBook: () => void;
-  setAsks: () => void;
-  setBids: () => void;
-  setLatest: () => void;
+  setAsks:  Dispatch<SetStateAction<any>>
+  setBids: Dispatch<SetStateAction<any>>;
+  setLatest: Dispatch<SetStateAction<any>>;
   latest: any;
   asks: any;
   bids: any;
@@ -35,8 +34,10 @@ type SelectedToken = {
   baseToken?: string;
 };
 
-const TokenContext = createContext<TokenContexts>({});
-// const TokenContext = createContext<Partial<TokenContexts>>({});
+
+
+// const TokenContext = createContext<TokenContexts>({});
+const TokenContext = createContext<Partial<TokenContexts>>({});
 
 const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
   const [selectedToken, setSelectedToken] = useState<SelectedToken>({
@@ -60,9 +61,10 @@ const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
     }));
   }
 
-  const handleAsks = useCallback((asks: any) => setAsks([...asks]), []);
 
-  const handleBids = useCallback((bids: any) => setBids([...bids]), []);
+  const handleAsks =(asks: any) => setAsks([...asks])
+
+  const handleBids = (bids: any) => setBids([...bids])
 
   const fetchOrderBook = useCallback(async () => {
     if (selectedToken.baseToken === "" || selectedToken.quoteToken === "") {
@@ -86,7 +88,8 @@ const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
     } catch (error) {
       toast.error("Error fetching order book");
     }
-  }, [handleAsks, handleBids, selectedToken]);
+  }, [ selectedToken]);
+
 
   const value = useMemo(() => {
     return {
@@ -102,6 +105,7 @@ const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
       setAsks,
       setLatest,
       latest,
+      setSelectedToken
     };
   }, [asks, bids, setAsks, latest, setBids, selectedToken, fetchOrderBook]);
 
