@@ -1,8 +1,5 @@
 "use client";
 
-import OrderbookClient from "./orderbookClient";
-import CurrentOrder from "./currentOrder";
-
 import { v4 as uuidv4 } from "uuid";
 
 import Card from "./components/Card";
@@ -13,6 +10,7 @@ import { useEffect, useState } from "react";
 import Empty from "./components/Empty";
 import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
 import { TOKEN_LIST } from "./utility/data";
+import LatestUpdates from "./components/LatestUpdates";
 
 export default function Home() {
   const {
@@ -52,11 +50,9 @@ export default function Home() {
 
     if (isWebSocketOpen) {
       sendMessage(JSON.stringify(requestPayload));
-      // setIsWebSocketOpen(true);
     }
   };
 
-  console.log("latest Data", latest);
   const update = (data: any) => {
     console.log(data, quoteToken, "qt-", "bt", baseToken);
     data.map((token) => {
@@ -89,8 +85,9 @@ export default function Home() {
     }
   }, [lastMessage, baseToken, quoteToken]);
 
-  console.log(asks, bids);
-  // const newArr = [...asks];
+  useEffect(() => {
+    if (baseToken !== "" && quoteToken !== "") setLatest([]);
+  }, [baseToken, quoteToken]);
 
   return (
     <main className="bg-gray-800 w-screen h-screen text-white">
@@ -119,7 +116,7 @@ export default function Home() {
                   {latest === undefined || latest.length === 0 ? (
                     <Empty title="Latest Updates" />
                   ) : (
-                    <PriceBox title="Latest Updates" tokenList={latest} />
+                    <LatestUpdates title="Latest Updates" tokenList={latest} />
                   )}
                 </div>
               </div>
