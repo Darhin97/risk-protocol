@@ -25,7 +25,8 @@ export default function Home() {
   } = useTokenContext();
   const [isWebSocketOpen, setIsWebSocketOpen] = useState(false);
 
-  const { quoteToken, baseToken } = selectedToken;
+  const  baseToken  = selectedToken?.baseToken;
+  const quoteToken = selectedToken?.quoteToken
 
   const socketURL = "wss://api.0x.org/orderbook/v1";
 
@@ -46,7 +47,9 @@ export default function Home() {
   });
 
   const handleFetchOrderBook = async () => {
-    await fetchOrderBook();
+    if (fetchOrderBook) {
+      await fetchOrderBook();
+    }
 
     if (isWebSocketOpen) {
       sendMessage(JSON.stringify(requestPayload));
@@ -54,24 +57,27 @@ export default function Home() {
   };
 
   const update = (data: any) => {
-    data.map((token) => {
+    data.map((token:any) => {
       if (
         token.order.makerToken === quoteToken &&
         token.order.takerToken === baseToken
       ) {
-        setBids((prev) => [...prev, token]);
+        if(setBids)
+        setBids((prev: any) => [...prev, token])
       }
       if (
         token.order.makerToken === baseToken &&
         token.order.takerToken === quoteToken
       ) {
-        setAsks((prev) => [...prev, token]);
+        if(setAsks)
+        setAsks((prev: any) => [...prev, token]);
       }
       if (
         TOKEN_LIST.find((tokenS) => tokenS.value === token.order.makerToken) &&
         TOKEN_LIST.find((tokenS) => tokenS.value === token.order.takerToken)
       ) {
-        setLatest((prev) => [...prev, token.order]);
+        if(setLatest)
+        setLatest((prev: any) => [...prev, token.order]);
       }
     });
   };
@@ -85,6 +91,7 @@ export default function Home() {
 
   useEffect(() => {
     if (baseToken !== "" && quoteToken !== "") {
+      if(setLatest)
       setLatest([]);
     }
   }, [baseToken, quoteToken]);

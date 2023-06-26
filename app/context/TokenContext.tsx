@@ -29,9 +29,9 @@ interface TokenContexts {
   bids: any;
 }
 
-type SelectedToken = {
-  quoteToken?: string;
-  baseToken?: string;
+export type SelectedToken = {
+  quoteToken: string;
+  baseToken: string;
 };
 
 
@@ -63,6 +63,8 @@ const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
 
 
   const handleAsks =(asks: any) => setAsks([...asks])
+
+
 
   const handleBids = (bids: any) => setBids([...bids])
 
