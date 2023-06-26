@@ -25,7 +25,6 @@ export const TOKEN_LIST: ITokenList[] = [
   },
   {
     value: "0xdac17f958d2ee523a2206206994597c13d831ec7",
-
     label: "Tether USD",
     symbol: "USDT",
     decimals: 6,

@@ -54,19 +54,18 @@ export default function Home() {
   };
 
   const update = (data: any) => {
-    console.log(data, quoteToken, "qt-", "bt", baseToken);
     data.map((token) => {
       if (
         token.order.makerToken === quoteToken &&
         token.order.takerToken === baseToken
       ) {
-        setAsks((prev) => [...prev, token.order]);
+        setBids((prev) => [...prev, token]);
       }
       if (
         token.order.makerToken === baseToken &&
         token.order.takerToken === quoteToken
       ) {
-        setBids((prev) => [...prev, token.order]);
+        setAsks((prev) => [...prev, token]);
       }
       if (
         TOKEN_LIST.find((tokenS) => tokenS.value === token.order.makerToken) &&
@@ -81,12 +80,13 @@ export default function Home() {
     if (baseToken !== "" && quoteToken !== "" && lastMessage !== null) {
       const messageData = JSON.parse(lastMessage.data);
       update(messageData.payload);
-      console.log(messageData);
     }
   }, [lastMessage, baseToken, quoteToken]);
 
   useEffect(() => {
-    if (baseToken !== "" && quoteToken !== "") setLatest([]);
+    if (baseToken !== "" && quoteToken !== "") {
+      setLatest([]);
+    }
   }, [baseToken, quoteToken]);
 
   return (

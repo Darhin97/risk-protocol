@@ -14,8 +14,6 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = (props) => {
   const { title, tokenList } = props;
   const [orders, setOrders] = useState([]);
 
-  console.log("token here", tokenList);
-
   useEffect(() => {
     setOrders(tokenList);
   }, [tokenList]);

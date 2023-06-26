@@ -83,14 +83,10 @@ const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
 
       handleAsks(data?.asks?.records);
       handleBids(data?.bids?.records);
-
-      console.log(data);
     } catch (error) {
-      console.error("Error fetching order book:", error);
+      toast.error("Error fetching order book");
     }
   }, [handleAsks, handleBids, selectedToken]);
-
-  console.log("asks:", asks, "bids:", bids);
 
   const value = useMemo(() => {
     return {
