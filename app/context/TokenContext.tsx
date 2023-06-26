@@ -77,7 +77,7 @@ const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
     const params = { baseToken, quoteToken };
 
     try {
-      const url = "https://api.0x.org/orderbook/v1";
+      const url = "/api/orderbook";
       const response = await axios.get(url, { params });
       const data = response.data;
 
