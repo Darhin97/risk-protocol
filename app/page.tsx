@@ -1,11 +1,97 @@
+"use client";
+
 import OrderbookClient from "./orderbookClient";
 import CurrentOrder from "./currentOrder";
+
+import { v4 as uuidv4 } from "uuid";
 
 import Card from "./components/Card";
 import Header from "./components/Header";
 import PriceBox from "./components/PriceBox";
+import { useTokenContext } from "./context/TokenContext";
+import { useEffect, useState } from "react";
+import Empty from "./components/Empty";
+import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
+import { TOKEN_LIST } from "./utility/data";
 
 export default function Home() {
+  const {
+    asks,
+    bids,
+    selectedToken,
+    fetchOrderBook,
+    setAsks,
+    setBids,
+    latest,
+    setLatest,
+  } = useTokenContext();
+  const [isWebSocketOpen, setIsWebSocketOpen] = useState(false);
+
+  const { quoteToken, baseToken } = selectedToken;
+
+  const socketURL = "wss://api.0x.org/orderbook/v1";
+
+  const requestPayload = {
+    type: "subscribe",
+    channel: "orders",
+    requestId: uuidv4(),
+    pairs: [`${quoteToken}-${baseToken}`],
+  };
+
+  const { sendMessage, lastMessage } = useWebSocket(socketURL, {
+    onOpen: () => {
+      setIsWebSocketOpen(true);
+    },
+    shouldReconnect: () => true,
+    reconnectAttempts: 3,
+    reconnectInterval: 3000,
+  });
+
+  const handleFetchOrderBook = async () => {
+    await fetchOrderBook();
+
+    if (isWebSocketOpen) {
+      sendMessage(JSON.stringify(requestPayload));
+      // setIsWebSocketOpen(true);
+    }
+  };
+
+  console.log("latest Data", latest);
+  const update = (data: any) => {
+    console.log(data, quoteToken, "qt-", "bt", baseToken);
+    data.map((token) => {
+      if (
+        token.order.makerToken === quoteToken &&
+        token.order.takerToken === baseToken
+      ) {
+        setAsks((prev) => [...prev, token.order]);
+      }
+      if (
+        token.order.makerToken === baseToken &&
+        token.order.takerToken === quoteToken
+      ) {
+        setBids((prev) => [...prev, token.order]);
+      }
+      if (
+        TOKEN_LIST.find((tokenS) => tokenS.value === token.order.makerToken) &&
+        TOKEN_LIST.find((tokenS) => tokenS.value === token.order.takerToken)
+      ) {
+        setLatest((prev) => [...prev, token.order]);
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (baseToken !== "" && quoteToken !== "" && lastMessage !== null) {
+      const messageData = JSON.parse(lastMessage.data);
+      update(messageData.payload);
+      console.log(messageData);
+    }
+  }, [lastMessage, baseToken, quoteToken]);
+
+  console.log(asks, bids);
+  // const newArr = [...asks];
+
   return (
     <main className="bg-gray-800 w-screen h-screen text-white">
       <Header />
@@ -15,25 +101,39 @@ export default function Home() {
             <div className="flex flex-col gap-5 w-full h-full">
               <div className="h-1/2 bg-gray-200 p-2">
                 <div className="flex flex-row gap-3 ">
-                  <PriceBox />
-                  <PriceBox />
+                  {asks === undefined || asks.length === 0 ? (
+                    <Empty title="Asks Token" />
+                  ) : (
+                    <PriceBox title="Asks Token" tokenList={asks} />
+                  )}
+
+                  {bids === undefined || bids.length === 0 ? (
+                    <Empty title="Bids Token" />
+                  ) : (
+                    <PriceBox title="Bids Token" tokenList={bids} />
+                  )}
                 </div>
               </div>
               <div>
                 <div>
-                  <PriceBox />
+                  {latest === undefined || latest.length === 0 ? (
+                    <Empty title="Latest Updates" />
+                  ) : (
+                    <PriceBox title="Latest Updates" tokenList={latest} />
+                  )}
                 </div>
               </div>
             </div>
           </div>
           <div className="col-span-2 py-10 px-5">
             <div className="w-full pr-5">
-              <Card qoutetitle="Quote Token" basetitle="Base Token" />
+              <Card handleClick={handleFetchOrderBook} />
             </div>
           </div>
         </div>
       </div>
     </main>
-    // <CurrentOrder />
+
+    // <OrderbookClient />
   );
 }

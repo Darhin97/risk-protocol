@@ -6,13 +6,13 @@ import Image from "next/image";
 
 interface SelectProps {
   name?: string;
-  value: string | null;
-  action: (value: ITokenList) => void;
+  value?: string;
+  action?: (value: string) => void;
 }
 
 const TokenSelect: React.FC<SelectProps> = (props) => {
   const { name, value, action } = props;
-  const newValue = TOKEN_LIST.find((token) => token.address === value);
+  const newValue = TOKEN_LIST.find((token) => token.value === value);
 
   return (
     <div>
@@ -20,7 +20,15 @@ const TokenSelect: React.FC<SelectProps> = (props) => {
         isClearable={true}
         name={name}
         value={newValue ? newValue : null}
-        onChange={(value) => action(value as ITokenList)}
+        onChange={(value) => {
+          if (action) {
+            if (value) {
+              action(value.value as string);
+            } else {
+              action("");
+            }
+          }
+        }}
         placeholder="Select Token"
         options={TOKEN_LIST}
         formatOptionLabel={(option: ITokenList) => (
@@ -29,7 +37,7 @@ const TokenSelect: React.FC<SelectProps> = (props) => {
               <Image width={30} height={30} src={option.logoSrc} alt="logo" />
             </div>
             <div className="flex flex-col">
-              <div>{option.name}</div>
+              <div>{option.label}</div>
               <div className="text-neutral-500 ml-1">{option.symbol}</div>
             </div>
           </div>
@@ -45,7 +53,7 @@ const TokenSelect: React.FC<SelectProps> = (props) => {
           colors: {
             ...theme.colors,
             primary25: "#e3dfdf",
-            primary: "#fff",
+            primary: "#e3dfdf",
           },
         })}
       />

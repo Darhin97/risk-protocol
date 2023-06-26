@@ -20,7 +20,7 @@ const LatestUpdates = (): JSX.Element => {
   const handlePairChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedPair(event.target.value as TokenPair);
   };
-  // console.log(orders);
+  console.log(orders);
 
   // const;
 

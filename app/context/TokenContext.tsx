@@ -1,7 +1,16 @@
 "use client";
 
 import axios from "axios";
-import { createContext, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
+import { toast } from "react-hot-toast";
+import { createObject } from "../utility/actions";
+import { data } from "autoprefixer";
 
 interface TokenProviderProps {
   children: React.ReactNode;
@@ -10,19 +19,24 @@ interface TokenProviderProps {
 interface TokenContexts {
   selectedToken: SelectedToken;
   setSelectedToken: (newToken: SelectedToken) => void;
+  handleQouteToken: (token: string) => void;
+  handleBaseToken: (token: string) => void;
+  fetchOrderBook: () => void;
+  setAsks: () => void;
+  setBids: () => void;
+  setLatest: () => void;
+  latest: any;
+  asks: any;
+  bids: any;
 }
 
-// const defaultValues: TokenContext = {
-//   selectedToken,
-//   setSelectedToken,
-// };
-
 type SelectedToken = {
-  quoteToken: string;
-  baseToken: string;
+  quoteToken?: string;
+  baseToken?: string;
 };
 
-const TokenContext = createContext<Partial<TokenContexts>>({});
+const TokenContext = createContext<TokenContexts>({});
+// const TokenContext = createContext<Partial<TokenContexts>>({});
 
 const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
   const [selectedToken, setSelectedToken] = useState<SelectedToken>({
@@ -31,47 +45,69 @@ const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
   });
   const [asks, setAsks] = useState<any>([]);
   const [bids, setBids] = useState<any>([]);
+  const [latest, setLatest] = useState<any>([]);
 
-  function handleSelectedToken(token: any) {
+  function handleQouteToken(token: string) {
     setSelectedToken((prev) => ({
       ...prev,
-      token,
+      quoteToken: token,
+    }));
+  }
+  function handleBaseToken(token: string) {
+    setSelectedToken((prev) => ({
+      ...prev,
+      baseToken: token,
     }));
   }
 
-  function handleAsks(asks: any) {
-    setAsks((prev) => [...prev, asks]);
-  }
+  const handleAsks = useCallback((asks: any) => setAsks([...asks]), []);
 
-  function handleBids(asks: any) {
-    setBids((prev) => [...prev, asks]);
-  }
+  const handleBids = useCallback((bids: any) => setBids([...bids]), []);
 
-  const fetchOrderBook = async () => {
+  const fetchOrderBook = useCallback(async () => {
+    if (selectedToken.baseToken === "" || selectedToken.quoteToken === "") {
+      return toast.error("Choose quote token or base token");
+    }
+
+    if (selectedToken.baseToken === selectedToken.quoteToken) {
+      return toast.error("Selected tokens can't be the same");
+    }
+
     const { baseToken, quoteToken } = selectedToken;
     const params = { baseToken, quoteToken };
 
-    const url = "https://api.0x.org/orderbook/v1";
-    const response = await axios.get(url, { params });
-    const data = await response;
+    try {
+      const url = "https://api.0x.org/orderbook/v1";
+      const response = await axios.get(url, { params });
+      const data = response.data;
 
-    handleAsks(data.data?.asks.records);
-    handleBids(data.data?.bids.records);
+      handleAsks(data?.asks?.records);
+      handleBids(data?.bids?.records);
 
-    console.log(data);
-    // console.log("new object", ask);
-  };
+      console.log(data);
+    } catch (error) {
+      console.error("Error fetching order book:", error);
+    }
+  }, [handleAsks, handleBids, selectedToken]);
+
+  console.log("asks:", asks, "bids:", bids);
 
   const value = useMemo(() => {
     return {
       selectedToken,
       asks,
       bids,
-      handleSelectedToken,
+      handleBaseToken,
+      handleQouteToken,
       handleAsks,
       handleBids,
+      fetchOrderBook,
+      setBids,
+      setAsks,
+      setLatest,
+      latest,
     };
-  }, [asks, bids, selectedToken]);
+  }, [asks, bids, setAsks, latest, setBids, selectedToken, fetchOrderBook]);
 
   return (
     <TokenContext.Provider value={value}>{children}</TokenContext.Provider>

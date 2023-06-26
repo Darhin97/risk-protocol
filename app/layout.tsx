@@ -1,3 +1,4 @@
+import ToasterProvider from "./context/ToasterProvider";
 import { TokenProvider } from "./context/TokenContext";
 import "./globals.css";
 import { Inter } from "next/font/google";
@@ -16,9 +17,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <TokenProvider>
-        <body className={inter.className}>{children}</body>
-      </TokenProvider>
+      <body className={inter.className}>
+        <ToasterProvider />
+        <TokenProvider>{children}</TokenProvider>
+      </body>
     </html>
   );
 }
